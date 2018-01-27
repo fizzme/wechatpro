@@ -1,9 +1,12 @@
 package com.fizzblock.wechat.controller;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fizzblock.wechat.response.Article;
+import com.fizzblock.wechat.response.NewsMessage;
 import com.fizzblock.wechat.response.TextMessage;
+import com.fizzblock.wechat.util.common.XStreamMessageUtil;
 import com.fizzblock.wechat.util.common.impl.MessageUtil;
 import com.fizzblock.wechat.util.common.impl.SignCheckUtil;
 
@@ -53,11 +59,15 @@ public class WeixinController {
         String timestamp = request.getParameter("timestamp");
         String nonce = request.getParameter("nonce");
         String echostr = request.getParameter("echostr");
-        
+        //空参数则返回，不执行校验
+        if(signature==null||timestamp==null||nonce==null||"".equals(signature)||"".equals(timestamp)||"".equals(nonce)){
+        	System.out.println("出现微信校验请求参数为空");
+        	return ;
+        }
         String msg = "获取到的相关wx请求校验信息，{signature:%s timestamp:%s nonce:%s echostr:%s}";
         System.out.println("校验消息输出"+String.format(msg, signature,timestamp,nonce,echostr));
         
-		//进行校验
+		//参数非空进行校验
 		if (SignCheckUtil.checkSignature(signature, timestamp, nonce)) {
 			System.out.println(time+"：签名校验通过。");
 			out.print(echostr);
@@ -81,68 +91,40 @@ public class WeixinController {
 	@RequestMapping(value = "/wx" ,method=RequestMethod.POST)
 	@ResponseBody
 	public String wxRequestDispatcher(HttpServletRequest request) throws IOException {
-//		response.setContentType("text/html;charset=utf-8"); //设置输出编码格式
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-		String nowDate =df.format(new Date());
 		
-		//xml格式消息数据请求
+		//xml格式响应给用户的消息数据
 		String responseXml = null;
 		
-		//默认返回的文本消息
-		String respContent = "未实现的消息类型";
-		
 		try{
-			
+	        // 从request中取得输入流
+	        InputStream inputStream = request.getInputStream();
+	        
+	        //获取请求的xml内容
+	        String requestXml = MessageUtil.getStrFromInputSteam(inputStream);
+	        System.out.println(getDate()+"--->请求的xml内容："+requestXml);
+	        
 			//调用parseXml方法解析请求消息
-			Map<String,String > requestMap = MessageUtil.parseXml(request);
+			Map<String,String > requestMap = MessageUtil.parseXml(requestXml);
 			
 			//获取请求相关信息
-			String fromUserName = requestMap.get("FromUserName");
-			String toUserName =requestMap.get("ToUserName");
 			String msgType = requestMap.get("MsgType");
 			
-			//响应的文本消息初始化
-			TextMessage textMsg = new TextMessage();
-			textMsg.setFromUserName(toUserName);
-			textMsg.setToUserName(fromUserName);
-			textMsg.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_TEXT);
-			textMsg.setCreateTime(System.currentTimeMillis());
-			
-			/*
-			 * 判断请求消息的类型，响应不同的消息回复
-			 * 
-			 */
+			//判断请求消息的类型，响应不同的消息回复
 			if(MessageUtil.REQ_MESSAGE_TYPE_TEXT.equals(msgType)){//文本类型
-				//解析文本对象
-				com.fizzblock.wechat.request.TextMessage textMessage = MessageUtil.xmlToMessage(request.getInputStream().toString(), com.fizzblock.wechat.request.TextMessage.class);
-				//获取文本内容
-				String content = textMessage.getContent();
-				System.out.println("获取的用户请求的文本消息内容："+content);
-				respContent="你发送的是文本消息\n文本消息内容："+content;
-				
+				return textMessageResponse(requestMap,requestXml);
 			}else if(MessageUtil.REQ_MESSAGE_TYPE_IMAGE.equals(msgType)){//图片类型
-				respContent="你发送的是图片消息";
+				return imageMessageResponse(requestMap,requestXml);
 			}else if(MessageUtil.REQ_MESSAGE_TYPE_LINK.equals(msgType)){//链接类型
-				respContent="你发送的是链接消息";
+				return linkMessageResponse(requestMap,requestXml);
 			}else if(MessageUtil.REQ_MESSAGE_TYPE_VOICE.equals(msgType)){//语音类型
-				respContent="你发送的是语音消息";
+				return voiceMessageResponse(requestMap,requestXml);
 			}else if(MessageUtil.REQ_MESSAGE_TYPE_EVENT.equals(msgType)){//事件类型
-				
-				//获取具体的事件类型
-				String eventType = requestMap.get("Event");
-				
-				if(MessageUtil.EVENT_TYPE_CLICK.equals(eventType)){//菜单点击事件
-					String menuName = requestMap.get("EventKey");
-					respContent="点击了菜单："+menuName;
-					
-				}else if(MessageUtil.EVENT_TYPE_SUBSCRIBE.equals(eventType)){//用户关注事件，调用授权页面
-					System.out.println(">>>>>>>>>用户关注");
-				}else if(MessageUtil.EVENT_TYPE_UNSUBSCRIBE.equals(eventType)){//用户取关事件
-					System.out.println(">>>>>>>>>用户取关");
-				}
+				return eventMessageResponse(requestMap,requestXml);
 			}
-			
-			textMsg.setContent(respContent);
+
+			//默认响应返回的文本消息
+			TextMessage textMsg = initTextMessage(requestMap);
+			textMsg.setContent("未实现的消息类型");
 			//响应返回
 			responseXml =  MessageUtil.messageToXml(textMsg);
 		}catch(Exception ex){
@@ -151,9 +133,224 @@ public class WeixinController {
 		
 		return responseXml;
 	}
-	
-	
 
 
+	//返回格式化日期
+	private String getDate() {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+		String nowDate =df.format(new Date());
+		return nowDate;
+	}
+
+
+	//初始化的文本消息类型
+	private TextMessage initTextMessage(Map<String, String> requestMap) {
+		//获取请求相关信息
+		String fromUserName = requestMap.get("FromUserName");
+		String toUserName =requestMap.get("ToUserName");
+		
+		//响应的文本消息初始化
+		TextMessage textMsg = new TextMessage();
+		textMsg.setFromUserName(toUserName);
+		textMsg.setToUserName(fromUserName);
+		textMsg.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_TEXT);
+		textMsg.setCreateTime(System.currentTimeMillis());
+		
+		return textMsg;
+	}
+
+
+	//事件消息类型，需要对事件消息的具体类型进行判断
+	private String eventMessageResponse(Map<String, String> requestMap,String requestXml) {
+
+		String eventType = requestMap.get("Event");//获取具体的事件类型
+		
+		if(MessageUtil.EVENT_TYPE_CLICK.equals(eventType)){//菜单点击事件
+			String menuName = requestMap.get("EventKey");
+			return menuClickResponse(menuName,requestMap,requestXml);
+		}else if(MessageUtil.EVENT_TYPE_SUBSCRIBE.equals(eventType)){//用户关注事件，调用授权页面
+			return userSubscribeResponse(requestMap,requestXml);
+		}else if(MessageUtil.EVENT_TYPE_UNSUBSCRIBE.equals(eventType)){//用户取关事件
+			return userUnSubscribeResponse(requestXml);
+		}
+		
+		//默认响应返回的文本消息
+		TextMessage textMsg = initTextMessage(requestMap);
+		textMsg.setContent("未实现的事件类型");
+		return MessageUtil.messageToXml(textMsg);
+	}
+
+
+	private String voiceMessageResponse(Map<String,String > requestMap,String requestXml) {
+		//默认响应返回的文本消息
+		TextMessage textMsg = initTextMessage(requestMap);
+		textMsg.setContent("你发送的是语音消息");
+		return MessageUtil.messageToXml(textMsg);
+	}
+
+
+	private String linkMessageResponse(Map<String,String > requestMap,String requestXml) {
+		TextMessage textMsg = initTextMessage(requestMap);
+		textMsg.setContent("你发送的是链接消息");
+		return MessageUtil.messageToXml(textMsg);
+	}
+
+
+	private String imageMessageResponse(Map<String,String > requestMap,String requestXml) {
+		TextMessage textMsg = initTextMessage(requestMap);
+		textMsg.setContent("你发送的是图片消息");
+		return MessageUtil.messageToXml(textMsg);
+	}
+
+
+	private String userUnSubscribeResponse(String requestXml) {
+		// TODO Auto-generated method stub
+		System.out.println(getDate()+">>>>>>>>>用户取关");
+		return null;
+	}
+
+
+	private String userSubscribeResponse(Map<String,String > requestMap,String requestXml) {
+		// TODO Auto-generated method stub
+		
+		System.out.println(getDate()+">>>>>>>>>用户关注:"+requestXml);
+		String message = "你好，欢迎关注~~\n\n"
+						+"初来乍到请多多指教哟！\n\n"
+						+"回复：绑定，进行绑定操作\n\n"
+						+"回复：资源，可以获取更多的资源哦\n\n"
+						+"回复：图文，可以查看往期文章哟\n\n";
+		
+		TextMessage textMsg = initTextMessage(requestMap);
+		textMsg.setContent(message);
+		return MessageUtil.messageToXml(textMsg);
+	}
+
+
+	//菜单点击事件处理
+	private String menuClickResponse(String menuName, Map<String,String > requestMap,String requestXml) {
+		//如果选择了绑定菜单，则发送一条图文
+		if("绑定".equals(menuName)){
+			
+		}
+		
+		//其他的响应返回
+		TextMessage textMsg = initTextMessage(requestMap);
+		textMsg.setContent("你点击了菜单："+ menuName);
+		return MessageUtil.messageToXml(textMsg);
+	}
+
+
+	//文本消息响应
+	private String textMessageResponse(Map<String,String > requestMap,String requestXml) {
+		//解析文本对象
+		com.fizzblock.wechat.request.TextMessage textMessageReq = MessageUtil.xmlToMessage(requestXml, com.fizzblock.wechat.request.TextMessage.class);
+		//获取文本内容
+		String content = textMessageReq.getContent().trim();
+		System.out.println("获取的用户请求的文本消息内容："+content);
+		String respContent= null ;
+		
+		String fromUser = textMessageReq.getToUserName();
+		String toUser = textMessageReq.getFromUserName();
+		
+		//图文基本使用的
+		NewsMessage newsMessage = new NewsMessage();
+		newsMessage.setFromUserName(fromUser);
+		newsMessage.setToUserName(toUser);
+		newsMessage.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_NEWS);
+		newsMessage.setCreateTime(System.currentTimeMillis());
+
+		//普通文本消息
+		TextMessage textMsg = initTextMessage(requestMap);
+		
+		switch(content){
+		
+    	case "绑定":
+    		
+    		//构造文章内容
+    		Article article1 = new Article();
+    		article1.setTitle("用户绑定");
+    		article1.setPicUrl("http://img.178.com/acg1/201801/310592749361/310592753623.jpg");
+    		article1.setUrl("http://acg.178.com/201801/310353320606.html");
+    		article1.setDescription("等你很久了，快来加入吧");
+    		
+    		//装入集合
+    		List<Article> articles = new ArrayList<>();
+    		articles.add(article1);
+    		newsMessage.setArticleCount(articles.size());//设置文章数为2
+    		newsMessage.setArticles(articles);
+    		
+    		System.out.println(">>>>>>>>>>>>>>>>>图文消息格式化结果...");
+    		respContent =  XStreamMessageUtil.messageToXml(newsMessage);
+    		break;
+    	case "资源":
+    		String message = "回复如下信息获取相关资源： \n"+
+					"1.回复 ：chanpin  可以《获取产品运营训练营—腾讯产品经理》  \n "+
+					"2.回复 ：linux  获取《linux命令行与shell编程大全》电子书资源  \n\n "+
+					"3.回复 ：git  获取《完全学会GIT SERVER的24堂课》电子书资源  \n\n "+
+					"4.回复 ：springboot  获取《JavaEE开发的颠覆者springboot实战》电子书资源  \n\n "+
+					"5.回复 ：design  获取《JAVA设计模式深入研究》电子书资源  \n\n "+
+					"6.回复 ：es  获取《深入理解ElasticSearch》电子书资源  \n\n "+
+					"更多资源敬请期待...\n\n";
+    		textMsg.setContent(message);
+    		respContent =  MessageUtil.messageToXml(textMsg);
+    		break;
+    	case "图文":
+	    		//装入集合
+	    		List<Article> articles2 = new ArrayList<>();
+	           Article article11 = new Article();  
+	           article11.setTitle("我是一条多图文消息");  
+	           article11.setDescription("");  
+	           article11.setPicUrl("http://img.hb.aicdn.com/ead4ae131c0a7f4c1665a8c64a3fd3ea04fd7cf81681e-EMxwTu_fw658");  
+	           article11.setUrl("http://tuposky.iteye.com/blog/2008583");  
+	
+	           Article article12 = new Article();  
+	           article12.setTitle("微信公众平台开发教程Java版（二）接口配置 ");  
+	           article12.setDescription("");  
+	           article12.setPicUrl("https://wx2.sinaimg.cn/mw690/9ceb2c2cly1fnkvf5z5ifj20e80e8aey.jpg");  
+	           article12.setUrl("http://tuposky.iteye.com/blog/2008655");  
+	
+	           Article article13 = new Article();  
+	           article13.setTitle("微信公众平台开发教程Java版(三) 消息接收和发送");  
+	           article13.setDescription("");  
+	           article13.setPicUrl("https://b-ssl.duitang.com/uploads/item/201603/03/20160303091940_LKwNa.jpeg");  
+	           article13.setUrl("http://tuposky.iteye.com/blog/2017429");  
+	
+	           articles2.add(article11);  
+	           articles2.add(article12);  
+	           articles2.add(article13);  
+	           newsMessage.setArticleCount(articles2.size());  
+	           newsMessage.setArticles(articles2);  
+	           respContent = MessageUtil.messageToXml(newsMessage);
+           break;
+    	case "chanpin":
+    		textMsg.setContent("产品运营  链接：http://pan.baidu.com/s/1o8h0Zns 密码：qx9m");
+    		respContent =  MessageUtil.messageToXml(textMsg);
+    		break;
+    	case "linux":
+    		textMsg.setContent("《linux命令行与shell编程大全》 链接：http://pan.baidu.com/s/1geJYFYz 密码：h11t");
+    		respContent =  MessageUtil.messageToXml(textMsg);
+    		break;
+    	case "git":
+    		textMsg.setContent("《完全学会GIT SERVER的24堂课》 链接：http://pan.baidu.com/s/1pLsov2N 密码：4fn0");
+    		respContent =  MessageUtil.messageToXml(textMsg);
+    		break;
+    	case "springboot":
+    		textMsg.setContent("《JavaEE开发的颠覆者springboot实战》 链接：http://pan.baidu.com/s/1cIxomi 密码：eo9g");
+    		respContent =  MessageUtil.messageToXml(textMsg);
+    		break;
+    	case "design":
+    		textMsg.setContent("《JAVA设计模式深入研究》 链接：http://pan.baidu.com/s/1hrYPL3Y 密码：ofl5");
+    		respContent =  MessageUtil.messageToXml(textMsg);
+    		break;
+    	case "es":
+    		textMsg.setContent("《深入理解ElasticSearch》 链接：http://pan.baidu.com/s/1kUPWh9d 密码：dmng");
+    		respContent =  MessageUtil.messageToXml(textMsg);
+    		break;
+	    }
+		
+		return respContent;
+	}
+	
+	
     
 }

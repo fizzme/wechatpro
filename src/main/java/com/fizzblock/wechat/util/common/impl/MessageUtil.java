@@ -1,6 +1,12 @@
 package com.fizzblock.wechat.util.common.impl;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,29 +58,37 @@ public class MessageUtil {
 	 * @return
 	 * @throws Exception
 	 */
-    public static Map<String,String> parseXml(HttpServletRequest request) throws Exception {
-        // 将解析结果存储在HashMap中
-        Map<String,String> map = new HashMap<>();
-
-        // 从request中取得输入流
-        InputStream inputStream = request.getInputStream();
-        System.out.println("parseXml-解析消息：获取输入流");
-        // 读取输入流
-        SAXReader reader = new SAXReader();
-        Document document = reader.read(inputStream);
-        // 得到xml根元素
-        Element root = document.getRootElement();
-        // 得到根元素的所有子节点
-        List<Element> elementList = root.elements();
-
-        // 遍历所有子节点
-        for (Element e : elementList) {
-            System.out.print(e.getName() + "|" + e.getText());
-            map.put(e.getName(), e.getText());
-        }
-        // 释放资源
-        inputStream.close();
-        inputStream = null;
+    public static Map<String,String> parseXml(String  xmlString) throws Exception {
+    	Map<String,String> map = null;
+    	if(null!= xmlString&&!"".equals(xmlString)){
+	    		
+	    	System.out.println("parseXml-解析消息：获取输入流");
+	    	
+	        // 将解析结果存储在HashMap中
+	        map = new HashMap<>();
+	
+	        // 读取输入流
+	        SAXReader reader = new SAXReader();
+//	        Document document = reader.read(inputStream);
+	        InputStream inputStream =  new ByteArrayInputStream(xmlString.getBytes());
+	        Document document = reader.read(inputStream);
+//	        Document document = reader.read(xmlString);
+	        // 得到xml根元素
+	        Element root = document.getRootElement();
+	        // 得到根元素的所有子节点
+	        List<Element> elementList = root.elements();
+	
+	        // 遍历所有子节点
+	        for (Element e : elementList) {
+	            System.out.print(e.getName() + "|" + e.getText());
+	            map.put(e.getName(), e.getText());
+	        }
+	        // 释放资源
+	        inputStream.close();
+	        inputStream = null;
+    	}else{
+    		throw new Exception("parseXml-解析消息异常，参数："+xmlString);
+    	}
 
         return map;
     }
@@ -100,5 +114,28 @@ public class MessageUtil {
 	public static <T> T xmlToMessage(String xml,Class<T> cls ){
 		
 		return XStreamMessageUtil.xmlToMessage(xml, cls);
+	}
+	
+	
+	/**
+	 * 将输入流转换为字符串
+	 * @param in
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getStrFromInputSteam(InputStream in) throws IOException{
+		StringBuffer buffer = null;
+		if(null != in){
+			System.out.println("输入流的内容："+in.toString());
+		     BufferedReader bf=new BufferedReader(new InputStreamReader(in,"UTF-8"));
+		     //最好在将字节流转换为字符流的时候 进行转码
+		     buffer=new StringBuffer();
+		     String line="";
+		     while((line=bf.readLine())!=null){
+		         buffer.append(line);
+		     }
+		}
+	     
+	    return buffer.toString();
 	}
 }
