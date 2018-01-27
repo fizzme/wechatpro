@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,7 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fizzblock.wechat.response.TextMessage;
+import com.fizzblock.wechat.util.common.impl.MessageUtil;
 import com.fizzblock.wechat.util.common.impl.SignCheckUtil;
 
 @Controller
@@ -75,18 +79,77 @@ public class WeixinController {
 	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/wx" ,method=RequestMethod.POST)
-	public void wxRequestDispatcher(HttpServletRequest request,HttpServletResponse response) throws IOException {
-		response.setContentType("text/html;charset=utf-8"); //设置输出编码格式
+	@ResponseBody
+	public String wxRequestDispatcher(HttpServletRequest request) throws IOException {
+//		response.setContentType("text/html;charset=utf-8"); //设置输出编码格式
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 		String nowDate =df.format(new Date());
 		
 		//xml格式消息数据请求
-		String reqXml = null;
+		String responseXml = null;
 		
 		//默认返回的文本消息
 		String respContent = "未实现的消息类型";
 		
+		try{
+			
+			//调用parseXml方法解析请求消息
+			Map<String,String > requestMap = MessageUtil.parseXml(request);
+			
+			//获取请求相关信息
+			String fromUserName = requestMap.get("FromUserName");
+			String toUserName =requestMap.get("ToUserName");
+			String msgType = requestMap.get("MsgType");
+			
+			//响应的文本消息初始化
+			TextMessage textMsg = new TextMessage();
+			textMsg.setFromUserName(toUserName);
+			textMsg.setToUserName(fromUserName);
+			textMsg.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_TEXT);
+			textMsg.setCreateTime(System.currentTimeMillis());
+			
+			/*
+			 * 判断请求消息的类型，响应不同的消息回复
+			 * 
+			 */
+			if(MessageUtil.REQ_MESSAGE_TYPE_TEXT.equals(msgType)){//文本类型
+				//解析文本对象
+				com.fizzblock.wechat.request.TextMessage textMessage = MessageUtil.xmlToMessage(request.getInputStream().toString(), com.fizzblock.wechat.request.TextMessage.class);
+				//获取文本内容
+				String content = textMessage.getContent();
+				System.out.println("获取的用户请求的文本消息内容："+content);
+				respContent="你发送的是文本消息\n文本消息内容："+content;
+				
+			}else if(MessageUtil.REQ_MESSAGE_TYPE_IMAGE.equals(msgType)){//图片类型
+				respContent="你发送的是图片消息";
+			}else if(MessageUtil.REQ_MESSAGE_TYPE_LINK.equals(msgType)){//链接类型
+				respContent="你发送的是链接消息";
+			}else if(MessageUtil.REQ_MESSAGE_TYPE_VOICE.equals(msgType)){//语音类型
+				respContent="你发送的是语音消息";
+			}else if(MessageUtil.REQ_MESSAGE_TYPE_EVENT.equals(msgType)){//事件类型
+				
+				//获取具体的事件类型
+				String eventType = requestMap.get("Event");
+				
+				if(MessageUtil.EVENT_TYPE_CLICK.equals(eventType)){//菜单点击事件
+					String menuName = requestMap.get("EventKey");
+					respContent="点击了菜单："+menuName;
+					
+				}else if(MessageUtil.EVENT_TYPE_SUBSCRIBE.equals(eventType)){//用户关注事件，调用授权页面
+					System.out.println(">>>>>>>>>用户关注");
+				}else if(MessageUtil.EVENT_TYPE_UNSUBSCRIBE.equals(eventType)){//用户取关事件
+					System.out.println(">>>>>>>>>用户取关");
+				}
+			}
+			
+			textMsg.setContent(respContent);
+			//响应返回
+			responseXml =  MessageUtil.messageToXml(textMsg);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 		
+		return responseXml;
 	}
 	
 	

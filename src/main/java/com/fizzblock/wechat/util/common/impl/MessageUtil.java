@@ -15,6 +15,36 @@ import com.fizzblock.wechat.util.common.XStreamMessageUtil;
 
 public class MessageUtil {
 
+	//定义类型请求消息类型
+	//文本类型
+	public static final String REQ_MESSAGE_TYPE_TEXT ="text";
+	//image
+	public static final String REQ_MESSAGE_TYPE_IMAGE ="image";
+	//voice
+	public static final String REQ_MESSAGE_TYPE_VOICE ="voice";
+	//链接
+	public static final String REQ_MESSAGE_TYPE_LINK ="link";
+	
+	
+	//事件消息类型
+	public static final String REQ_MESSAGE_TYPE_EVENT ="event";
+	//事件类型：订阅subscribe
+	public static final String EVENT_TYPE_SUBSCRIBE ="subscribe";
+	//事件类型：取消订阅
+	public static final String EVENT_TYPE_UNSUBSCRIBE ="unsubscribe";
+	//事件类型：click自定义菜单
+	public static final String EVENT_TYPE_CLICK ="CLICK";
+	
+	//响应消息类型
+	//文本
+	public static final String RESP_MESSAGE_TYPE_TEXT ="text";
+	//图片
+	public static final String RESP_MESSAGE_TYPE_IMAGE ="image";
+	//图文消息
+	public static final String RESP_MESSAGE_TYPE_NEWS ="news";
+	
+	
+	
 	/**
 	 * 获取请求中的xml，解析请求中的xml文件流<br>
 	 * 微信xml消息层次都是1层没有过多的嵌套
