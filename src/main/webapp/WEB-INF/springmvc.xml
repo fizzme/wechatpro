@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd        
+        ">
+
+	<!-- springMVC的注解驱动，配置处理器映射器，处理器适配器以及其其他默认配置 -->
+<!--     <mvc:annotation-driven/> -->
+        <mvc:annotation-driven >  
+        <mvc:message-converters register-defaults="true">  
+        <!-- 解决@ResponseBody中文乱码 -->  
+      <bean class="org.springframework.http.converter.StringHttpMessageConverter">  
+        <property name="supportedMediaTypes" value = "text/plain;charset=UTF-8" />  
+      </bean>  
+     </mvc:message-converters>  
+    </mvc:annotation-driven>  
+	
+	<!-- spingMVC的视图解析器 -->
+<!-- 	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"/> -->
+
+	<!-- spingMVC的视图解析器 ,配置视图解析器中的前缀和后缀属性-->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!--前缀  --> 
+		<property name="prefix">
+			<value>/WEB-INF/content/</value>
+<!-- 			<value>/WEB-INF/content/</value> -->
+		</property>
+ 		<!--后缀 --> 
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+
+	<!-- 扫描controller实例 -->
+	<context:component-scan base-package="com.fizzblock.wechat.controller"/>
+
+</beans>
