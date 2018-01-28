@@ -99,11 +99,11 @@
 		</dependency>
 		
 		<!-- 封装的http请求处理的工具类 -->
-		<dependency>
+<!-- 		<dependency>
 			<groupId>com.fizzbook</groupId>
 			<artifactId>http-common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
 		<!-- base64加密，开源实现 ，sun提供的可能后面会变更 -->

@@ -16,17 +16,17 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
-import org.apache.http.HttpEntity;
+import org.junit.Test;
+/*import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.junit.Test;
 
 import com.chinamobile.httpclient.client.LocalHttpClient;
-import com.chinamobile.httpclient.utils.JsonUtil;
+import com.chinamobile.httpclient.utils.JsonUtil;*/
 import com.fizzblock.wechat.menu.Button;
 import com.fizzblock.wechat.menu.ClickButton;
 import com.fizzblock.wechat.menu.ComplexButton;
@@ -35,7 +35,7 @@ import com.fizzblock.wechat.menu.ViewButton;
 
 public class MenuTest {
 
-	
+/*	
 	@Test
 	public void menuInit() throws IOException, KeyManagementException, NoSuchAlgorithmException, NoSuchProviderException{
 
@@ -113,13 +113,13 @@ public class MenuTest {
 		String accessToken = "5_I23VKk4j3ptENhstAaJGFuOFFSxb6qtvN5s8hzPOlI0BFtQlgku_ZrURcbcaxzqUozm76RsNDVtjfF8Y7pDXTs8LgGnD6CWSj63UxA_i_Zfl-2qt8qVmUShFgbKrviI__7OdAY6Y6saAQzR4IHVeAIAUTH";
 		
 		String createMenuUrl = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token="+accessToken;
-/*		try {
+		try {
 			String result = LocalHttpClient.jsonPost(url, jsonMenu);
 			System.out.println("菜单创建完成");
 			System.out.println("result:"+result);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
+		}
 		
 		//获取accessToken
 	    //httpClient
@@ -181,7 +181,7 @@ public class MenuTest {
 		System.out.println(sb);
 		
 		
-	}
+	}*/
 	
 	
 }
