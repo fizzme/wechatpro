@@ -214,11 +214,11 @@ public class WeixinController {
 		// TODO Auto-generated method stub
 		
 		System.out.println(getDate()+">>>>>>>>>用户关注:"+requestXml);
-		String message = "你好，欢迎关注~~\n\n"
-						+"初来乍到请多多指教哟！\n\n"
-						+"回复：绑定，进行绑定操作\n\n"
-						+"回复：资源，可以获取更多的资源哦\n\n"
-						+"回复：图文，可以查看往期文章哟\n\n";
+		String message = "你好，欢迎关注/:circle/:circle~~\n\n"
+						+"初来乍到请多多指教哟！[Hey][Hey]\n\n"
+						+"回复：绑定，进行绑定操作/:@)\n\n"
+						+"回复：资源，可以获取更多的资源哦[Concerned][Concerned]\n\n"
+						+"回复：图文，可以查看往期文章哟[Smirk][Smirk]\n\n";
 		
 		TextMessage textMsg = initTextMessage(requestMap);
 		textMsg.setContent(message);
@@ -284,12 +284,12 @@ public class WeixinController {
     		break;
     	case "资源":
     		String message = "回复如下信息获取相关资源： \n"+
-					"1.回复 ：chanpin  可以《获取产品运营训练营—腾讯产品经理》  \n "+
-					"2.回复 ：linux  获取《linux命令行与shell编程大全》电子书资源  \n\n "+
-					"3.回复 ：git  获取《完全学会GIT SERVER的24堂课》电子书资源  \n\n "+
-					"4.回复 ：springboot  获取《JavaEE开发的颠覆者springboot实战》电子书资源  \n\n "+
-					"5.回复 ：design  获取《JAVA设计模式深入研究》电子书资源  \n\n "+
-					"6.回复 ：es  获取《深入理解ElasticSearch》电子书资源  \n\n "+
+					"1.回复 ：chanpin  可以《获取产品运营训练营—腾讯产品经理》[Hey]  \n\n "+
+					"2.回复 ：linux  获取《linux命令行与shell编程大全》电子书资源  [Smirk]\n\n "+
+					"3.回复 ：git  获取《完全学会GIT SERVER的24堂课》电子书资源  /:jj\n\n "+
+					"4.回复 ：springboot  获取《JavaEE开发的颠覆者springboot实战》电子书资源 [Yeah!] \n\n "+
+					"5.回复 ：design  获取《JAVA设计模式深入研究》电子书资源  /:hug \n\n "+
+					"6.回复 ：es  获取《深入理解ElasticSearch》电子书资源 /::* \n\n "+
 					"更多资源敬请期待...\n\n";
     		textMsg.setContent(message);
     		respContent =  MessageUtil.messageToXml(textMsg);
