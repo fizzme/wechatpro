@@ -40,5 +40,6 @@
 
 	<!-- 扫描controller实例 -->
 	<context:component-scan base-package="com.fizzblock.wechat.controller"/>
+	<context:component-scan base-package="com.fizzblock.wechat.service"/>
 
 </beans>

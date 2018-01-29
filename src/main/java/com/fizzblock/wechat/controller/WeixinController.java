@@ -12,6 +12,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.fizzblock.wechat.response.Article;
 import com.fizzblock.wechat.response.NewsMessage;
 import com.fizzblock.wechat.response.TextMessage;
+import com.fizzblock.wechat.service.TemplateMessageService;
+import com.fizzblock.wechat.template.BDResource;
 import com.fizzblock.wechat.util.common.XStreamMessageUtil;
 import com.fizzblock.wechat.util.common.impl.MessageUtil;
 import com.fizzblock.wechat.util.common.impl.SignCheckUtil;
@@ -30,8 +34,13 @@ public class WeixinController {
     //以ip方式测试授权
     private static final String redirect_url2 = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2Ffizzblock.bceapp.com%2FgetSNSUserinfo.do&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";  
 
-    //日了狗....这个地址不对
+    //这个地址不对
     private static final String redirect_url_login = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2Ffizzblock.bceapp.com%2FgetUserInfoBind.do&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";  
+    
+    @Autowired
+    @Qualifier("templateService")
+    TemplateMessageService templateService ;
+    
     /**		
      * 接收微信服务器验证消息
      * @param request
@@ -94,7 +103,7 @@ public class WeixinController {
 		
 		//xml格式响应给用户的消息数据
 		String responseXml = null;
-		
+		System.out.println(">>>>>>>>>>>>>>>获取模板消息的service实例："+templateService);
 		try{
 	        // 从request中取得输入流
 	        InputStream inputStream = request.getInputStream();
@@ -262,6 +271,8 @@ public class WeixinController {
 		//普通文本消息
 		TextMessage textMsg = initTextMessage(requestMap);
 		
+		BDResource baiduResource = null;
+		
 		switch(content){
 		
     	case "绑定":
@@ -323,28 +334,82 @@ public class WeixinController {
 	           respContent = MessageUtil.messageToXml(newsMessage);
            break;
     	case "chanpin":
-    		textMsg.setContent("产品运营  链接：http://pan.baidu.com/s/1o8h0Zns 密码：qx9m");
-    		respContent =  MessageUtil.messageToXml(textMsg);
+    		textMsg.setContent("产品运营  链接：http://pan.baidu.com/s/1o8h0Zns 密码：");
+    		baiduResource = new BDResource("《产品运营训练营—腾讯产品经理》PPT[高清]", "qx9m", "http://pan.baidu.com/s/1o8h0Zns");
+    		try {
+				templateService.sendDownloadTemplate(textMsg.getToUserName(), baiduResource);
+			} catch (IOException e) {
+				System.out.println("模板消息发送异常：");
+				e.printStackTrace();
+				respContent =  MessageUtil.messageToXml(textMsg);
+				break;
+			}
+    		respContent ="";
     		break;
     	case "linux":
     		textMsg.setContent("《linux命令行与shell编程大全》 链接：http://pan.baidu.com/s/1geJYFYz 密码：h11t");
-    		respContent =  MessageUtil.messageToXml(textMsg);
+    		try {
+    			baiduResource = new BDResource("《linux命令行与shell编程大全》PDF扫描版 [高清]", "h11t", "http://pan.baidu.com/s/1geJYFYz");
+				templateService.sendDownloadTemplate(textMsg.getToUserName(), baiduResource);
+			} catch (IOException e) {
+				System.out.println("模板消息发送异常：");
+				e.printStackTrace();
+				respContent =  MessageUtil.messageToXml(textMsg);
+				break;
+			}
+    		respContent =  "";
     		break;
     	case "git":
     		textMsg.setContent("《完全学会GIT SERVER的24堂课》 链接：http://pan.baidu.com/s/1pLsov2N 密码：4fn0");
-    		respContent =  MessageUtil.messageToXml(textMsg);
+    		try {
+    			baiduResource = new BDResource("《完全学会GIT SERVER的24堂课》PDF扫描版 [高清]", "4fn0", "http://pan.baidu.com/s/1pLsov2N");
+				templateService.sendDownloadTemplate(textMsg.getToUserName(), baiduResource);
+			} catch (IOException e) {
+				System.out.println("模板消息发送异常：");
+				e.printStackTrace();
+				respContent =  MessageUtil.messageToXml(textMsg);
+				break;
+			}
+    		respContent =  "";
     		break;
     	case "springboot":
     		textMsg.setContent("《JavaEE开发的颠覆者springboot实战》 链接：http://pan.baidu.com/s/1cIxomi 密码：eo9g");
-    		respContent =  MessageUtil.messageToXml(textMsg);
+    		try {
+    			baiduResource = new BDResource("《JavaEE开发的颠覆者springboot实战》PDF扫描版 [高清]", "eo9g", "http://pan.baidu.com/s/1cIxomi");
+				templateService.sendDownloadTemplate(textMsg.getToUserName(), baiduResource);
+			} catch (IOException e) {
+				System.out.println("模板消息发送异常：");
+				e.printStackTrace();
+				respContent =  MessageUtil.messageToXml(textMsg);
+				break;
+			}
+    		respContent =  "";
     		break;
     	case "design":
     		textMsg.setContent("《JAVA设计模式深入研究》 链接：http://pan.baidu.com/s/1hrYPL3Y 密码：ofl5");
-    		respContent =  MessageUtil.messageToXml(textMsg);
+    		try {
+    			baiduResource = new BDResource("《JAVA设计模式深入研究》PDF扫描版 [高清]", "ofl5", "http://pan.baidu.com/s/1hrYPL3Y");
+				templateService.sendDownloadTemplate(textMsg.getToUserName(), baiduResource);
+			} catch (IOException e) {
+				System.out.println("模板消息发送异常：");
+				e.printStackTrace();
+				respContent =  MessageUtil.messageToXml(textMsg);
+				break;
+			}
+    		respContent =  "";
     		break;
     	case "es":
     		textMsg.setContent("《深入理解ElasticSearch》 链接：http://pan.baidu.com/s/1kUPWh9d 密码：dmng");
-    		respContent =  MessageUtil.messageToXml(textMsg);
+    		try {
+    			baiduResource = new BDResource("《深入理解ElasticSearch》PDF扫描版 [高清]", "dmng", "http://pan.baidu.com/s/1kUPWh9d");
+				templateService.sendDownloadTemplate(textMsg.getToUserName(), baiduResource);
+			} catch (IOException e) {
+				System.out.println("模板消息发送异常：");
+				e.printStackTrace();
+				respContent =  MessageUtil.messageToXml(textMsg);
+				break;
+			}
+    		respContent =  "";
     		break;
 	    }
 		

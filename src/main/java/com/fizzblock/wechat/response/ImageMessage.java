@@ -1,6 +1,5 @@
 package com.fizzblock.wechat.response;
 
-import com.fizzblock.wechat.response.media.Image;
 
 /**
  * 图片消息回复

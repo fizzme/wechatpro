@@ -1,4 +1,4 @@
-package com.fizzblock.wechat.response.media;
+package com.fizzblock.wechat.response;
 
 /**
  * 图片消息

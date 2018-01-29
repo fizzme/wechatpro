@@ -9,9 +9,9 @@ import org.junit.Test;
 
 import com.fizzblock.wechat.request.ImageMessage;
 import com.fizzblock.wechat.response.Article;
+import com.fizzblock.wechat.response.Image;
 import com.fizzblock.wechat.response.NewsMessage;
 import com.fizzblock.wechat.response.TextMessage;
-import com.fizzblock.wechat.response.media.Image;
 import com.fizzblock.wechat.util.common.XStreamMessageUtil;
 
 public class XmStreamUtilTest {
