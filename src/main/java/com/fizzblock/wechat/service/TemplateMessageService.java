@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.fizzblock.template.message.TemplateData;
 import com.fizzblock.wechat.template.BDResource;
+import com.fizzblock.wechat.template.TemplateData;
 import com.fizzblock.wechat.util.httpclient.LocalHttpClient;
 
 @Service(value="templateService")

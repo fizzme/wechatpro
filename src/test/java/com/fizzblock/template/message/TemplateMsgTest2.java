@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.fizzblock.wechat.template.BDResource;
+import com.fizzblock.wechat.template.TemplateData;
 import com.fizzblock.wechat.util.httpclient.JSONUtil;
 import com.fizzblock.wechat.util.httpclient.LocalHttpClient;
 
@@ -35,38 +37,7 @@ public class TemplateMsgTest2 {
 		users.put("zkq", "o3Wh70TjTIZk9VpOtcw5vbIQ1dN4");
 	}
 	
-	class BDResource{
-		String resourceName;
-		String sharePwd;
-		String shareURL;
-		
-		public BDResource(){};
-		public BDResource(String resourceName,String sharePwd,String shareURL){
-			this.resourceName = resourceName;
-			this.sharePwd = sharePwd;
-			this.shareURL = shareURL;
-		}
-		
-		public String getResourceName() {
-			return resourceName;
-		}
-		public void setResourceName(String resourceName) {
-			this.resourceName = resourceName;
-		}
-		public String getSharePwd() {
-			return sharePwd;
-		}
-		public void setSharePwd(String sharePwd) {
-			this.sharePwd = sharePwd;
-		}
-		public String getShareURL() {
-			return shareURL;
-		}
-		public void setShareURL(String shareURL) {
-			this.shareURL = shareURL;
-		}
-		
-	}
+
 	
 	public void SendDownloadTemplate(String toUser,BDResource baiduResource) throws IOException{
 		String templateUrl = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+accessToken;
