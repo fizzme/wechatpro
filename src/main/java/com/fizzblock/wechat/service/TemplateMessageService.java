@@ -15,7 +15,7 @@ import com.fizzblock.wechat.util.httpclient.LocalHttpClient;
 @Service(value="templateService")
 public class TemplateMessageService {
 	//资源下载模板id
-	String templateId_download = "NvEiHqNvFJaQTjH7PmE6-f-JgXz2AhCTa_k6gdCj3X8";
+	String templateId_download = "MQ56RYkF8BJsqPhHLcp5cKg32jhW9NIbtVQ60cN1Lvg";
 	//2018-1-29 19:19:25 到20:19可用
 	String accessToken = "6_p_je-3nIfrBUOTpEHX0xwQsSqJs9XLvi1Jz1bMFmstyOKCpTQe0QzsSvTTNnNOYj1me80vHE6B8-nhli7jDOXoYRPSdFQ8z2tCvsH9hIF-1ewaWsOEDPpu7u_ru5pDGdaRcCVJK1o6pnDL7SXXYjAIAOOP";
 	
