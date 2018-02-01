@@ -24,6 +24,8 @@ import com.fizzblock.wechat.response.NewsMessage;
 import com.fizzblock.wechat.response.TextMessage;
 import com.fizzblock.wechat.service.TemplateMessageService;
 import com.fizzblock.wechat.template.BDResource;
+import com.fizzblock.wechat.template.ResumeFeedBack;
+import com.fizzblock.wechat.template.ResumeSend;
 import com.fizzblock.wechat.util.common.XStreamMessageUtil;
 import com.fizzblock.wechat.util.common.impl.MessageUtil;
 import com.fizzblock.wechat.util.common.impl.SignCheckUtil;
@@ -219,15 +221,21 @@ public class WeixinController {
 	}
 
 
+	/**
+	 * 用户关注公众号响应
+	 * @param requestMap
+	 * @param requestXml
+	 * @return
+	 */
 	private String userSubscribeResponse(Map<String,String > requestMap,String requestXml) {
-		// TODO Auto-generated method stub
 		
 		System.out.println(getDate()+">>>>>>>>>用户关注:"+requestXml);
 		String message = "你好，欢迎关注/:circle/:circle~~\n\n"
 						+"初来乍到请多多指教哟！[Hey][Hey]\n\n"
 						+"回复：绑定，进行绑定操作/:@)\n\n"
 						+"回复：资源，可以获取更多的资源哦[Concerned][Concerned]\n\n"
-						+"回复：图文，可以查看往期文章哟[Smirk][Smirk]\n\n";
+						+"回复：图文，可以查看往期文章哟[Smirk][Smirk]\n\n"
+						+"另外选择我的招聘菜单，可以进行简历投递和查看[Concerned][Concerned]\n\n";
 		
 		TextMessage textMsg = initTextMessage(requestMap);
 		textMsg.setContent(message);
@@ -236,12 +244,42 @@ public class WeixinController {
 
 
 	//菜单点击事件处理
+	//添加投递简历菜单和点击事件处理
 	private String menuClickResponse(String menuName, Map<String,String > requestMap,String requestXml) {
+		String user =  requestMap.get("FromUserName");;
+		
 		//如果选择了绑定菜单，则发送一条图文
 		if("绑定".equals(menuName)){
-			
+//			return "";
 		}
 		
+		try {
+			//投递简历
+			if("sendResume".equals(menuName)){
+				ResumeSend resumeSend = new ResumeSend();
+				resumeSend.setFirst("您好!您的简历投递成功");
+				resumeSend.setCompany("北京58同城信息技术有限公司");
+				resumeSend.setJob("产品经理");
+				templateService.sendResumeSubmitTemplate(user, resumeSend);
+				return "";
+			}
+				//查看简历状态
+			if("resumeStatus".equals(menuName)){
+				ResumeFeedBack resumeFeedBack = new ResumeFeedBack();
+				resumeFeedBack.setFirst("您好!您的简历投递成功");
+				resumeFeedBack.setCompany("北京58同城信息技术有限公司");
+				resumeFeedBack.setJob("产品经理");
+				resumeFeedBack.setResult("已查看");
+				templateService.sendResumeFeedbackTemplate(user, resumeFeedBack);
+				return "";
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			//其他的响应返回
+			TextMessage textMsg = initTextMessage(requestMap);
+			textMsg.setContent("你点击了菜单："+ menuName);
+			return MessageUtil.messageToXml(textMsg);
+		}
 		//其他的响应返回
 		TextMessage textMsg = initTextMessage(requestMap);
 		textMsg.setContent("你点击了菜单："+ menuName);
