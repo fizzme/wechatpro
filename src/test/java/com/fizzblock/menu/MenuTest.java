@@ -210,10 +210,10 @@ public class MenuTest {
 	private String createMenuNew() {
 		
 		//请求地址，微信会进行回调
-		String bindUser = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2Ffizzblock.bceapp.com%2FgetSNSUserinfo2.do&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";
+		String bindUser = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2F118.25.4.250%2Fwechat-demo%2FgetSNSUserinfo2.do&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";
 		
 		//这个地址不对...
-		String loginUser ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2Ffizzblock.bceapp.com%2FgetUserInfoBind.do&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";
+		String loginUser ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2F118.25.4.250%2Fwechat-demo%2FgetUserInfoBind.do&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";
 		
 		//复合按钮一-----------------------------------------
 		
@@ -228,10 +228,14 @@ public class MenuTest {
 		linkbtn2.setName("用户登陆");
 		linkbtn2.setUrl(loginUser);
 		
+		ClickButton clickBtn = new ClickButton();
+		clickBtn.setName("用户绑定new");
+		clickBtn.setKey("bindNew");
+		
 		//复合按钮包含2个click类型的按钮
 		ComplexButton cmbtn1 = new ComplexButton();
 		cmbtn1.setName("用户服务");
-		cmbtn1.setSub_button(new Button[]{linkbtn1,linkbtn2});
+		cmbtn1.setSub_button(new Button[]{linkbtn1,clickBtn,linkbtn2});
 		
 		//复合按钮二-----------------------------------------
 		
@@ -258,11 +262,11 @@ public class MenuTest {
 		//链接按钮
 		ViewButton btn2 = new ViewButton();
 		btn2.setName("我的微站");
-		btn2.setUrl("http://fizzblock.bceapp.com/home.do");
+		btn2.setUrl("http://118.25.4.250/wechat-demo/");
 		
 		ClickButton btn31 = new ClickButton();
-		btn31.setName("hello word");
-		btn31.setKey("V1001_HELLO_WORLD");
+		btn31.setName("资源下载");
+		btn31.setKey("btn_download");
 		
 		ClickButton btn32 = new ClickButton();
 		btn32.setName("赞我们一下");

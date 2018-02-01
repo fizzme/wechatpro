@@ -246,11 +246,50 @@ public class WeixinController {
 	//菜单点击事件处理
 	//添加投递简历菜单和点击事件处理
 	private String menuClickResponse(String menuName, Map<String,String > requestMap,String requestXml) {
-		String user =  requestMap.get("FromUserName");;
+		String user =  requestMap.get("FromUserName");
 		
-		//如果选择了绑定菜单，则发送一条图文
-		if("绑定".equals(menuName)){
-//			return "";
+		//如果选择了下载资源返回一个文本消息
+		if("btn_download".equals(menuName)){
+			//普通文本消息
+			TextMessage textMsg = initTextMessage(requestMap);
+    		String message = "回复如下信息获取相关资源： \n"+
+					"1.回复 ：chanpin  可以《获取产品运营训练营—腾讯产品经理》[Hey]  \n\n "+
+					"2.回复 ：linux  获取《linux命令行与shell编程大全》电子书资源  [Smirk]\n\n "+
+					"3.回复 ：git  获取《完全学会GIT SERVER的24堂课》电子书资源  /:jj\n\n "+
+					"4.回复 ：springboot  获取《JavaEE开发的颠覆者springboot实战》电子书资源 [Yeah!] \n\n "+
+					"5.回复 ：design  获取《JAVA设计模式深入研究》电子书资源  /:hug \n\n "+
+					"6.回复 ：es  获取《深入理解ElasticSearch》电子书资源 /::* \n\n "+
+					"更多资源敬请期待...\n\n";
+    		textMsg.setContent(message);
+    		return MessageUtil.messageToXml(textMsg);
+		}
+		
+		//如果选择了绑定，则发送一条图文
+		if("bindNew".equals(menuName)){
+			String fromUser = requestMap.get("ToUserName");
+			String toUser =requestMap.get("FromUserName");
+			
+			//图文基本使用的
+			NewsMessage newsMessage = new NewsMessage();
+			newsMessage.setFromUserName(fromUser);
+			newsMessage.setToUserName(toUser);
+			newsMessage.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_NEWS);
+			newsMessage.setCreateTime(System.currentTimeMillis());
+    		//构造文章内容
+    		Article article1 = new Article();
+    		article1.setTitle("用户绑定");
+    		article1.setPicUrl("http://img.178.com/acg1/201801/310592749361/310592753623.jpg");
+    		article1.setUrl("http://acg.178.com/201801/310353320606.html");
+    		article1.setDescription("等你很久了，快来加入吧");
+    		
+    		//装入集合
+    		List<Article> articles = new ArrayList<>();
+    		articles.add(article1);
+    		newsMessage.setArticleCount(articles.size());//设置文章数为2
+    		newsMessage.setArticles(articles);
+    		
+    		System.out.println(">>>>>>>>>>>>>>>>>图文消息格式化结果...");
+    		return MessageUtil.messageToXml(newsMessage);
 		}
 		
 		try {
