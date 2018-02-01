@@ -257,8 +257,9 @@ public class WeixinController {
 			//投递简历
 			if("sendResume".equals(menuName)){
 				ResumeSend resumeSend = new ResumeSend();
-				resumeSend.setFirst("您好!您的简历投递成功");
+				resumeSend.setFirst("您好! 您的简历投递成功");
 				resumeSend.setCompany("北京58同城信息技术有限公司");
+				resumeSend.setUrl("http://www.baidu.com");
 				resumeSend.setJob("产品经理");
 				templateService.sendResumeSubmitTemplate(user, resumeSend);
 				return "";
@@ -266,8 +267,9 @@ public class WeixinController {
 				//查看简历状态
 			if("resumeStatus".equals(menuName)){
 				ResumeFeedBack resumeFeedBack = new ResumeFeedBack();
-				resumeFeedBack.setFirst("您好!您的简历投递成功");
+				resumeFeedBack.setFirst("您好! 您投递的简历有新的反馈");
 				resumeFeedBack.setCompany("北京58同城信息技术有限公司");
+				resumeFeedBack.setUrl("http://www.baidu.com");
 				resumeFeedBack.setJob("产品经理");
 				resumeFeedBack.setResult("已查看");
 				templateService.sendResumeFeedbackTemplate(user, resumeFeedBack);

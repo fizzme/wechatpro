@@ -69,7 +69,7 @@ public class TemplateMessageService {
 				.setTouser(toUser)
 				.setTemplate_id(template_resume_Send)
 				.setTopcolor("#743A3A")
-				.setUrl(resumeSend.getUrl()+"")//设置投递状态查看链接
+				.setUrl(resumeSend.getUrl())//设置投递状态查看链接
 				.add("first", resumeSend.getFirst()+"\n", "#743A3A")
 				.add("company", resumeSend.getCompany(), "#0000FF")
 				.add("job", resumeSend.getJob(), "#ff0000")
@@ -100,7 +100,7 @@ public class TemplateMessageService {
 				.setTouser(toUser)
 				.setTemplate_id(template_resume_feedback)
 				.setTopcolor("#743A3A")
-				.setUrl(resumeFeedBack.getUrl()+"")//设置投递状态查看链接
+				.setUrl(resumeFeedBack.getUrl())//设置投递状态查看链接
 				.add("first", resumeFeedBack.getFirst()+"\n", "#743A3A")
 				.add("company", resumeFeedBack.getCompany(), "#0000FF")
 				.add("time", dateTime, "#0000FF")
