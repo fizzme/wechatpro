@@ -350,7 +350,8 @@ public class WeixinController {
 		
 		//取号和排队服务需要初始化redis服务
 //		String args = "192.168.248.151:6379";
-		String args = "118.25.4.250:6379";
+//		String args = "118.25.4.250:6379";
+		String args = "127.0.0.1:6379";
 		JedisPool jedisPool = initJedisPool(args);
 		JedisOper jedisOper= new JedisOper(jedisPool);
 		
