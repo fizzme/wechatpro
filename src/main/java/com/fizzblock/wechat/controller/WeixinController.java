@@ -368,8 +368,9 @@ public class WeixinController {
 			} catch (IOException e) {
 				System.out.println("获取用户信息失败");
 				e.printStackTrace();
+				return "";
 			}
-			if(userWaitQueue.search(user)>0){
+			if(userWaitQueue.search(user)>=0){
 				
 				System.out.println("用户已经存在");
 				long index = userWaitQueue.search(user);
