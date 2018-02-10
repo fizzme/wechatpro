@@ -19,16 +19,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import redis.clients.jedis.JedisPool;
+
+import com.alibaba.fastjson.JSONObject;
 import com.fizzblock.wechat.response.Article;
 import com.fizzblock.wechat.response.NewsMessage;
 import com.fizzblock.wechat.response.TextMessage;
+import com.fizzblock.wechat.service.ShopTicketTemplateMsgService;
 import com.fizzblock.wechat.service.TemplateMessageService;
+import com.fizzblock.wechat.service.UserService;
+import com.fizzblock.wechat.service.UserWaitQueueImpl;
 import com.fizzblock.wechat.template.BDResource;
 import com.fizzblock.wechat.template.ResumeFeedBack;
 import com.fizzblock.wechat.template.ResumeSend;
+import com.fizzblock.wechat.template.TakeTicket;
+import com.fizzblock.wechat.template.TicketWait;
+import com.fizzblock.wechat.util.apis.WeiXinApis;
 import com.fizzblock.wechat.util.common.XStreamMessageUtil;
 import com.fizzblock.wechat.util.common.impl.MessageUtil;
 import com.fizzblock.wechat.util.common.impl.SignCheckUtil;
+import com.fizzblock.wechat.util.redis.JedisOper;
+import com.fizzblock.wechat.util.redis.JedisPoolUtil;
 
 @Controller
 public class WeixinController {
@@ -39,9 +50,24 @@ public class WeixinController {
     //这个地址不对
     private static final String redirect_url_login = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2Ffizzblock.bceapp.com%2FgetUserInfoBind.do&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";  
     
+    //简历模板消息service
     @Autowired
     @Qualifier("templateService")
     TemplateMessageService templateService ;
+    
+    
+    //排队取号模板消息service
+    @Autowired
+    @Qualifier("ticketTemplateService")
+    ShopTicketTemplateMsgService ticketTemplateService;
+    
+    
+    JedisOper jedisOper = null;
+    
+    UserService userService = null;
+    
+    //队列服务，基于redis
+    UserWaitQueueImpl userWaitQueue = null;
     
     /**		
      * 接收微信服务器验证消息
@@ -321,12 +347,153 @@ public class WeixinController {
 			textMsg.setContent("你点击了菜单："+ menuName);
 			return MessageUtil.messageToXml(textMsg);
 		}
+		
+		//取号和排队服务需要初始化redis服务
+//		String args = "192.168.248.151:6379";
+		String args = "118.25.4.250:6379";
+		JedisPool jedisPool = initJedisPool(args);
+		JedisOper jedisOper= new JedisOper(jedisPool);
+		
+		userService = new UserService(jedisOper);
+		userWaitQueue = new UserWaitQueueImpl(jedisPool);
+		//添加排队相关的事件按钮操作
+		//取号
+		if("takeTicket".equals(menuName)){
+			//获取用户信息，昵称等
+			String nickname = "";
+			try {
+				String userStr = getUserInfoByOpenId(user);
+				nickname = JSONObject.parseObject(userStr).getString("nickname");
+			} catch (IOException e) {
+				System.out.println("获取用户信息失败");
+				e.printStackTrace();
+			}
+			if(userWaitQueue.search(user)>0){
+				
+				System.out.println("用户已经存在");
+				long index = userWaitQueue.search(user);
+				String msg = String.format("用户:%s,您已经取票，您是 是第%s个用户，前面还有%s个人。\n查看具体消息，请选择排队进度菜单",nickname, (index+1)+"",index+"");
+				System.out.println(msg);
+				//普通文本消息
+				TextMessage textMsg = initTextMessage(requestMap);
+				textMsg.setContent(msg);
+			 return MessageUtil.messageToXml(textMsg);	
+			}
+			
+			//添加用户的openid到排队队列中
+			userWaitQueue.push(user);
+			
+			long index = userWaitQueue.search(user);
+			System.out.println(String.format("c用户是第%s个用户，前面还有%s个人", (index+1)+"",index+""));
+			
+			//根据当前排队进度信息拼接模板消息
+			System.out.println(">>>>>>>>>>>开始发送取号模板消息");
+			//格式化日期
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
+			String dateTime  = df.format(new Date());
+			
+			TakeTicket takeTicket = new TakeTicket();
+			takeTicket.setFirst("您已成功排队取号!");
+			takeTicket.setNickname(nickname);
+			takeTicket.setShopname("豆捞坊(锦艺城店)");
+			takeTicket.setNumber("小桌 3009");
+			takeTicket.setBefore(index+"桌");
+			takeTicket.setRemark(dateTime);
+			
+			//发送模板消息
+			try {
+				ticketTemplateService.sendTakeTicketTemplateMsg(user, takeTicket);
+			} catch (IOException e) {
+				System.out.println("发送模板消息失败....");
+				e.printStackTrace();
+			}
+			
+			return "";
+		}
+		
+		//查看排队进度
+		if("ticketWait".equals(menuName)){
+			//普通文本消息
+			long index = userWaitQueue.search(user);
+			System.out.println(String.format("c用户是第%s个用户，前面还有%s个人", (index+1)+"",index+""));
+			System.out.println(">>>>>>>>>>>开始发送排号模板消息");
+			
+			//格式化日期
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
+			String dateTime  = df.format(new Date());
+			
+			TicketWait ticketWait = new TicketWait();
+			ticketWait.setFirst("");
+			ticketWait.setShopname("豆捞坊(锦艺城店)");
+			ticketWait.setNumber("小桌 3009");
+			ticketWait.setBefore(index+"桌");
+			ticketWait.setWaitTime(">30分钟(仅供参考)");
+			ticketWait.setStatus("排队中");
+			ticketWait.setRemark(dateTime);
+			
+			try {
+				ticketTemplateService.sendTicketWaitTemplateMsg(user, ticketWait);
+			} catch (IOException e) {
+				System.out.println("发送模板消息失败....");
+				e.printStackTrace();
+			}
+			
+			return "";
+		}
+		
+		
 		//其他的响应返回
 		TextMessage textMsg = initTextMessage(requestMap);
 		textMsg.setContent("你点击了菜单："+ menuName);
 		return MessageUtil.messageToXml(textMsg);
 	}
 
+
+	
+	//获取用户基本信息
+	private String getUserInfoByOpenId(String openId) throws IOException {
+		//先从缓存中获取
+		String user = userService.getUserInfo(openId);
+		System.out.println("从缓存中获取结果："+user);
+		
+		//缓存中没有则从服务端获取
+		if(null == user||"".equals(user)){
+			//获取accessToken
+			String accessToken =WeiXinApis.fetcheAccessToken() ;
+			//调用微信api
+			user = WeiXinApis.getFansInfo(openId,accessToken);
+			//加入缓存
+			userService.addUserInfo(openId, user);
+			System.out.println("缓存未命中，从微信服务器拉取用户信息，再次放入缓存");
+			System.out.println("用户信息："+user);
+			return user;
+		}
+			
+		System.out.println("缓存命中，从缓存中取用户信息");
+		System.out.println("用户信息："+user);
+		return user;
+	}
+
+	public JedisPool initJedisPool(String args){
+		
+		String [] params =args.split(":");
+		
+		String host = params[0];//主机名
+		int port = Integer.parseInt(params[1]);
+		System.out.println(String.format("host主机：%s port端口：%d", host,port));
+		JedisPool jedisPool =null;
+		
+		try{
+			//初始化jedis连接池
+			jedisPool = JedisPoolUtil.getJedisPool(host, port);
+		}catch(Exception ex){
+			System.out.println("初始化jedis连接池失败："+ex.getCause().toString());
+			return null;
+		}
+		//初始化jedis操作类
+
+		return jedisPool;
+}
 
 	//文本消息响应
 	private String textMessageResponse(Map<String,String > requestMap,String requestXml) {

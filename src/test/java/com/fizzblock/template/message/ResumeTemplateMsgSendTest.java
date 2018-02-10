@@ -21,7 +21,12 @@ import com.fizzblock.wechat.template.TemplateData;
 import com.fizzblock.wechat.util.httpclient.JSONUtil;
 import com.fizzblock.wechat.util.httpclient.LocalHttpClient;
 
-public class TemplateMsgSendTest {
+/**
+ * 简历消息模板发送测试类
+ * @author glen
+ *
+ */
+public class ResumeTemplateMsgSendTest {
 
 	TemplateMessageService templateService = new TemplateMessageService();
 	

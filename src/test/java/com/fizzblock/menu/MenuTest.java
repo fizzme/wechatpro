@@ -210,13 +210,13 @@ public class MenuTest {
 	private String createMenuNew() {
 		
 		//请求地址，微信会进行回调
-		String bindUser = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2F118.25.4.250%2Fwechat-demo%2FgetSNSUserinfo2.do&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";
+		String bindUser = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2Fwww.fizzblock.cn%2Fwechat-demo%2FgetSNSUserinfo2.do&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";
 		
 		//这个地址不对...
-		String loginUser ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2F118.25.4.250%2Fwechat-demo%2FgetUserInfoBind.do&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";
+		String loginUser ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx416c5da1eef311e6&redirect_uri=http%3A%2F%2Fwww.fizzblock.cn%2Fwechat-demo%2FgetUserInfoBind.do&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect";
 		
 		//复合按钮一-----------------------------------------
-		
+		//注意复制的时候，看看对象的名是进行了修改
 		//新增的链接按钮
 		//链接按钮一
 		ViewButton linkbtn1 = new ViewButton();
@@ -229,13 +229,21 @@ public class MenuTest {
 		linkbtn2.setUrl(loginUser);
 		
 		ClickButton clickBtn = new ClickButton();
-		clickBtn.setName("用户绑定new");
+		clickBtn.setName("绑定new");
 		clickBtn.setKey("bindNew");
+		
+		ClickButton ticketClickBtn1 = new ClickButton();
+		ticketClickBtn1.setName("排队取号");
+		ticketClickBtn1.setKey("takeTicket");
+		
+		ClickButton ticketClickBtn2 = new ClickButton();
+		ticketClickBtn2.setName("排队进度");
+		ticketClickBtn2.setKey("ticketWait");
 		
 		//复合按钮包含2个click类型的按钮
 		ComplexButton cmbtn1 = new ComplexButton();
 		cmbtn1.setName("用户服务");
-		cmbtn1.setSub_button(new Button[]{linkbtn1,clickBtn,linkbtn2});
+		cmbtn1.setSub_button(new Button[]{linkbtn1,clickBtn,linkbtn2,ticketClickBtn1,ticketClickBtn2});
 		
 		//复合按钮二-----------------------------------------
 		
@@ -262,7 +270,7 @@ public class MenuTest {
 		//链接按钮
 		ViewButton btn2 = new ViewButton();
 		btn2.setName("我的微站");
-		btn2.setUrl("http://118.25.4.250/wechat-demo/");
+		btn2.setUrl("http://www.fizzblock.cn/wechat-demo/");
 		
 		ClickButton btn31 = new ClickButton();
 		btn31.setName("资源下载");

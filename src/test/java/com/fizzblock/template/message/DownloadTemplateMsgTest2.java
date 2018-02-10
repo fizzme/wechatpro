@@ -13,10 +13,12 @@ import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.fizzblock.wechat.template.BDResource;
+import com.fizzblock.wechat.template.TemplateData;
 import com.fizzblock.wechat.util.httpclient.JSONUtil;
 import com.fizzblock.wechat.util.httpclient.LocalHttpClient;
 
-public class TemplateMsgTest {
+public class DownloadTemplateMsgTest2 {
 
 	//资源下载模板id
 	String templateId_download = "NvEiHqNvFJaQTjH7PmE6-f-JgXz2AhCTa_k6gdCj3X8";
@@ -35,40 +37,56 @@ public class TemplateMsgTest {
 		users.put("zkq", "o3Wh70TjTIZk9VpOtcw5vbIQ1dN4");
 	}
 	
+
+	
+	public void SendDownloadTemplate(String toUser,BDResource baiduResource) throws IOException{
+		String templateUrl = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+accessToken;
+		
+		SimpleDateFormat df = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+		String dateTime  = df.format(new Date());
+		String json = TemplateData.New()
+				.setTouser(toUser)
+				.setTemplate_id(templateId_download)
+				.setTopcolor("#743A3A")
+				.setUrl(baiduResource.getShareURL())
+				.add("first", baiduResource.getResourceName(), "#743A3A")
+				.add("passwd", baiduResource.getSharePwd(), "#0000FF")
+				.add("nowtime", dateTime, "#0000FF")
+				.add("attion", "如果取消关注本公众号，再次关注将无法享受分享码福利，切记切记", "#0000FF")
+				.add("end", "请点击向详情保存资源，祝生活愉快", "#008000")
+				.build();
+		
+		System.out.println("发送时间："+dateTime);
+		System.out.println("模板消息的主题内容："+json);
+		
+		String result = LocalHttpClient.jsonPost(templateUrl, json);
+		System.out.println("发送模板消息的结果："+result);
+	}
+	
 	@Test
 	public void testSendDownloadTemplate() throws IOException {
 //		String accessToken = fetcheAccessToken();
 		
 		String templateUrl = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+accessToken;
 		
-		Template template = new Template();
-		template.setTouser(users.get("lrh"));
-		template.setTemplate_id(templateId_download);
-		template.setUrl("http://pan.baidu.com/s/1pLsov2N");
-		
-		Map<String,Object> data = new HashMap<>(); 
-		
-/*		Map<String,String> first = initValue( value); 
-		Map<String,String> passwd = initValue( value); 
-		Map<String,String> nowtime = initValue( value); 
-		Map<String,String> attion = initValue(value); 
-		Map<String,String> end = initValue( value); */
-		
-		//构造模板消息主体data
-		data.put("first", initValue("《完全学会GIT SERVER的24堂课》完整版 高清pdf扫描版[43MB]"));
-		data.put("passwd", initValue("4fn0"));
-		SimpleDateFormat df = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 		String dateTime  = df.format(new Date());
-		data.put("nowtime", initValue(dateTime));
-		data.put("attion", initValue("如果取消关注本公众号，再次关注将无法享受分享码福利，切记切记"));
-		data.put("end", initValue("慧慧你好，模板消息测试"));
-		template.setData(data);
-		System.out.println("发送时间："+dateTime);
-
-		String templateMsgStr = JSONUtil.toJSONString(template);
-		System.out.println("模板消息的主题内容："+templateMsgStr);
+		String json = TemplateData.New()
+				.setTouser(users.get("zkq"))
+				.setTemplate_id(templateId_download)
+				.setTopcolor("#743A3A")
+				.setUrl("http://pan.baidu.com/s/1pLsov2N")
+				.add("first", "《完全学会GIT SERVER的24堂课》完整版 高清pdf扫描版[43MB]", "#743A3A")
+				.add("passwd", "4fn0", "#0000FF")
+				.add("nowtime", dateTime, "#0000FF")
+				.add("attion", "如果取消关注本公众号，再次关注将无法享受分享码福利，切记切记", "#0000FF")
+				.add("end", "请点击向详情保存资源，祝生活愉快", "#008000")
+				.build();
 		
-		String result = LocalHttpClient.jsonPost(templateUrl, templateMsgStr);
+		System.out.println("发送时间："+dateTime);
+		System.out.println("模板消息的主题内容："+json);
+		
+		String result = LocalHttpClient.jsonPost(templateUrl, json);
 		System.out.println("发送模板消息的结果："+result);
 		//发送模板消息的结果：{"errcode":0,"errmsg":"ok","msgid":128100519511080963}
 		
@@ -93,19 +111,6 @@ public class TemplateMsgTest {
 		return accessToken;
 	}
 	
-	
-	private String templateMsg(Template template){
-		
-/*		Map<String,String> templateBean = new HashMap<>();
-		
-		templateBean.put("touser", arg1);
-		templateBean.put("template_id", arg1);
-		templateBean.put("url", arg1);
-		templateBean.put("data", arg1);*/
-		String templateJson = JSONUtil.toJSONString(template);
-		System.out.println("模板消息的内容："+templateJson);
-		
-		return templateJson;
-	}
+
 	
 }
