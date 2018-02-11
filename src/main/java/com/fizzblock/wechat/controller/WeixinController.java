@@ -374,7 +374,7 @@ public class WeixinController {
 				
 				System.out.println("用户已经存在");
 				long index = userWaitQueue.search(user);
-				String msg = String.format("用户:%s,您已经取票，您是 是第%s个用户，前面还有%s个人。\n查看具体消息，请选择排队进度菜单",nickname, (index+1)+"",index+"");
+				String msg = String.format("用户:%s,您已经取票，您是第%s个用户，前面还有%s个人。\n选择菜单: 用户服务-->排队进度 查看排队详情",nickname, (index+1)+"",index+"");
 				System.out.println(msg);
 				//普通文本消息
 				TextMessage textMsg = initTextMessage(requestMap);
@@ -393,14 +393,25 @@ public class WeixinController {
 			//格式化日期
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
 			String dateTime  = df.format(new Date());
-			
 			TakeTicket takeTicket = new TakeTicket();
-			takeTicket.setFirst("您已成功排队取号!");
-			takeTicket.setNickname(nickname);
-			takeTicket.setShopname("豆捞坊(锦艺城店)");
-			takeTicket.setNumber("小桌 3009");
-			takeTicket.setBefore(index+"桌");
-			takeTicket.setRemark(dateTime);
+			
+			if(index<=4){
+				String msg = "温馨提示：由于您前面的排队用户较少,请不要走远及时准备就餐\n";
+				takeTicket.setFirst("您已成功排队取号!");
+				takeTicket.setNickname(nickname);
+				takeTicket.setShopname("豆捞坊(锦艺城店)");
+				takeTicket.setNumber("小桌 3009");
+				takeTicket.setBefore(index+"桌");
+				takeTicket.setRemark(msg+dateTime);
+			}else{
+				String msg = "温馨提示：\n选择菜单: 用户服务-->排队进度 查看排队详情\n";
+				takeTicket.setFirst("您已成功排队取号!");
+				takeTicket.setNickname(nickname);
+				takeTicket.setShopname("豆捞坊(锦艺城店)");
+				takeTicket.setNumber("小桌 3009");
+				takeTicket.setBefore(index+"桌");
+				takeTicket.setRemark(msg+dateTime);
+			}
 			
 			//发送模板消息
 			try {
@@ -419,19 +430,29 @@ public class WeixinController {
 			long index = userWaitQueue.search(user);
 			System.out.println(String.format("c用户是第%s个用户，前面还有%s个人", (index+1)+"",index+""));
 			System.out.println(">>>>>>>>>>>开始发送排号模板消息");
-			
-			//格式化日期
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
-			String dateTime  = df.format(new Date());
+			//前五名的模板消息有所不同
 			
 			TicketWait ticketWait = new TicketWait();
-			ticketWait.setFirst("");
-			ticketWait.setShopname("豆捞坊(锦艺城店)");
-			ticketWait.setNumber("小桌 3009");
-			ticketWait.setBefore(index+"桌");
-			ticketWait.setWaitTime(">30分钟(仅供参考)");
-			ticketWait.setStatus("排队中");
-			ticketWait.setRemark(dateTime);
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
+			String dateTime  = df.format(new Date());//格式化日期
+			if(index<=4){
+				ticketWait.setFirst("您的排号较前,请做好准备及时用餐");
+				ticketWait.setShopname("豆捞坊(锦艺城店)");
+				ticketWait.setNumber("小桌 3009");
+				ticketWait.setBefore(index+"桌");
+				ticketWait.setWaitTime("<30分钟(仅供参考)");
+				ticketWait.setStatus("排队中");
+				ticketWait.setRemark(dateTime);
+			}else{
+				ticketWait.setFirst("");
+				ticketWait.setShopname("豆捞坊(锦艺城店)");
+				ticketWait.setNumber("小桌 3009");
+				ticketWait.setBefore(index+"桌");
+				ticketWait.setWaitTime(">30分钟(仅供参考)");
+				ticketWait.setStatus("排队中");
+				ticketWait.setRemark(dateTime);
+			}
+
 			
 			try {
 				ticketTemplateService.sendTicketWaitTemplateMsg(user, ticketWait);
