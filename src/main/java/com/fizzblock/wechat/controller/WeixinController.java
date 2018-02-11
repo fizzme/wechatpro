@@ -396,7 +396,7 @@ public class WeixinController {
 			TakeTicket takeTicket = new TakeTicket();
 			
 			if(index<=4){
-				String msg = "温馨提示：由于您前面的排队用户较少,请不要走远及时准备就餐\n";
+				String msg = "温馨提示：由于您的排队靠前,请不要走远及时准备就餐\n";
 				takeTicket.setFirst("您已成功排队取号!");
 				takeTicket.setNickname(nickname);
 				takeTicket.setShopname("豆捞坊(锦艺城店)");
@@ -436,7 +436,7 @@ public class WeixinController {
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
 			String dateTime  = df.format(new Date());//格式化日期
 			if(index<=4){
-				ticketWait.setFirst("您的排号较前,请做好准备及时用餐");
+				ticketWait.setFirst("由于您的排队靠前,请不要走远及时准备就餐\n");
 				ticketWait.setShopname("豆捞坊(锦艺城店)");
 				ticketWait.setNumber("小桌 3009");
 				ticketWait.setBefore(index+"桌");
